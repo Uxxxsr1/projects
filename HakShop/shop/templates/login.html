@@ -111,52 +111,37 @@ function getCookie(name) {
 }
 
 function validate() {
-    // Получаем элементы
     const emailInput = document.getElementById("login-email");
     const passwordInput = document.getElementById("login-password");
     const error = document.getElementById("error-message");
-    
-    // Проверяем что элементы существуют
     if (!emailInput || !passwordInput || !error) {
         console.error("Required elements not found!");
         alert("Page loading error. Please refresh.");
         return;
     }
-    
-    // Получаем значения
     const emailValue = emailInput.value.trim();
     const passwordValue = passwordInput.value;
-    
-    // Очищаем сообщение
     error.textContent = "";
     error.style.color = "red";
     
-    // Проверка на пустые поля
     if (!emailValue || !passwordValue) {
         error.textContent = "Please fill in all fields!";
         return;
     }
     
-    // Проверка длины пароля
     if (passwordValue.length < 4) {
         error.textContent = "Password must be at least 4 characters long";
         return;
     }
-    
-    // Проверка email
     if (!emailValue.includes('@') || !emailValue.includes('.')) {
         error.textContent = "Please enter a valid email address";
         return;
     }
-    
-    // Отправляем запрос
     login(emailValue, passwordValue);
 }
 
 function login(email, password) {
     const errorElement = document.getElementById("error-message");
-    
-    // Проверяем что элемент существует
     if (!errorElement) {
         console.error("Error element not found!");
         alert("Login failed. Please refresh the page.");
@@ -200,7 +185,6 @@ function login(email, password) {
     })
     .catch(error => {
         console.error('Fetch error:', error);
-        // Используем errorElement, а не error
         if (errorElement) {
             if (error.message.includes('401')) {
                 errorElement.textContent = "Invalid email or password";
@@ -211,8 +195,6 @@ function login(email, password) {
         }
     });
 }
-
-// Добавляем обработку Enter
 document.addEventListener('DOMContentLoaded', function() {
     const passwordInput = document.getElementById('login-password');
     if (passwordInput) {
