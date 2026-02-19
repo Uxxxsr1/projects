@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HackShop Regestration</title>
+</head>
+<body>
+    <div class="square">
+        <div class="main-form">
+            <h1 id="name">HackShop</h1>
+            <input type="text" name="email" id="regestation-email" placeholder="Email">
+            <input type="password" name="password" id="regestation-password" placeholder="Password">
+            <input type="password" name="password" id="regestation-again-password" placeholder="Password again">
+            <button id="submit-login" onclick="validate()">Regestration</button>
+            <p id="error-message"></p>
+        </div>
+        <a id="btn-regestration" href="/regestation">Have account? Login!</a>
+    </div>
+
+<style>
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background-color: #f5f5f5;
+}
+
+.square {
+    width: 350px;
+    padding: 30px;
+    border: 1.5px solid #ddd;
+    border-radius: 8px;
+    background-color: white;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.main-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+}
+
+.main-form input,
+.main-form button {
+    padding: 12px;
+    box-sizing: border-box;
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.main-form input:focus {
+    outline: none;
+    border-color: #FF0000;
+}
+
+.main-form button {
+    cursor: pointer;
+    background-color: #FF0000;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.main-form button:hover {
+    background-color: #cc0000;
+}
+
+#name {
+    text-align: center;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+#error-message {
+    text-align: center;
+    font-size: 14px;
+    min-height: 20px;
+    margin: 5px 0 0 0;
+}
+#btn-regestration {
+    text-align: center;
+    color: blue;
+    transition: 0.3s;
+}
+</style>
+
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+function validate() {
+    // ОШИБКА: переменная error не определена!
+    let email = document.getElementById("regestation-email").value;
+    let password = document.getElementById("regestation-password").value;
+    let passworsdAgain = document.getElementById("regestation-again-password").value;
+    
+    // ИСПРАВЛЕНИЕ: получаем элемент error
+    let error = document.getElementById("error-message");
+    
+    error.textContent = "";
+    
+    if (!email || !password || !passworsdAgain) {
+        error.textContent = "Please fill in all fields!";
+        // ИСПРАВЛЕНИЕ: error.style.color, а не error.textStyle.color
+        error.style.color = "red";
+        return;
+    }
+    
+    if (password.length < 4) {
+        error.textContent = "Password must be at least 8 characters long!";
+        error.style.color = "red";
+        return;
+    }
+    
+    // ИСПРАВЛЕНИЕ: сравниваем password с passworsdAgain, а не passworsd
+    if (password !== passworsdAgain) {
+        error.textContent = "Passwords do not match!";
+        error.style.color = "red";
+        return;
+    }
+    
+    // ИСПРАВЛЕНИЕ: используем email, а не emailValue
+    if (!email.includes('@') || !email.includes('.')) {
+        error.textContent = "Please enter a valid email address";
+        error.style.color = "red";
+        return;
+    }
+    
+    register(email, password);
+}
+
+// ПЕРЕИМЕНОВАНО: с login на register для ясности
+function register(email, password) {
+    const error = document.getElementById("error-message");
+    const data = {
+        email: email,
+        password: password
+    };
+    
+    console.log('Sending data to:', '/api/submit_registration/');  // ИСПРАВЛЕНО
+    
+    fetch('/api/submit_registration/', {  // ИСПРАВЛЕНО: убрал /regestration/ из пути
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+            return response.text().then(text => {
+                throw new Error(`HTTP error! status: ${response.status}, message: ${text}`);
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Response data:', data);
+        if (data.status === 'success') {
+            error.textContent = "Registration successful! Redirecting...";
+            error.style.color = "green";
+            setTimeout(() => {
+                window.location.href = '/';  // редирект на страницу логина
+            }, 2000);
+        } else {
+            error.textContent = data.message || "Registration failed!";
+            error.style.color = "red";
+        }
+    })
+    .catch(error => {
+        console.error('Fetch Error:', error);
+        // ИСПРАВЛЕНО: проверка что error элемент существует
+        const errorElement = document.getElementById("error-message");
+        if (errorElement) {
+            errorElement.textContent = "Connection error. Make sure server is running.";
+            errorElement.style.color = "red";
+        } else {
+            console.error("Error element not found!");
+            alert("Connection error. Make sure server is running.");
+        }
+    });
+}
+</script>
+</body>
+</html>
